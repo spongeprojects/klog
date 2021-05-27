@@ -903,6 +903,17 @@ func LogToStderr(stderr bool) {
 	logging.toStderr = stderr
 }
 
+// WithLock calls `f` with logging.mu locked, for example, print something to stdout,
+// the output will be messy without lock.
+// ref: https://stackoverflow.com/questions/14694088
+// ref: https://stackoverflow.com/questions/20518829
+func WithLock(f func() error) error {
+	logging.mu.Lock()
+	defer logging.mu.Unlock()
+
+	return f()
+}
+
 // output writes the data to the log files and releases the buffer.
 func (l *loggingT) output(s severity, log logr.Logger, buf *buffer, depth int, file string, line int, alsoToStderr bool) {
 	l.mu.Lock()
